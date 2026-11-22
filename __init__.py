@@ -23,6 +23,13 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
+import importlib.util
+
+REQUIRED = {"mpmath": "mpmath"}
+
+def missing_dependencies():
+    return [pip for mod, pip in REQUIRED.items()
+            if importlib.util.find_spec(mod) is None]
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
@@ -31,6 +38,9 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    #
-    from .form_profiler import FormProfiler
+    missing = missing_dependencies()
+    if missing:
+        from .missing_deps import MissingDepsPlugin
+        return MissingDepsPlugin(iface, missing)
+    from .plugin import FormProfiler 
     return FormProfiler(iface)
